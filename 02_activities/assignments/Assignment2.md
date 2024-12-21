@@ -54,7 +54,60 @@ The store wants to keep customer addresses. Propose two architectures for the CU
 **HINT:** search type 1 vs type 2 slowly changing dimensions. 
 
 ```
-Your answer...
+For Type 1, to overwrites changes, we first need to create the customer_address to the table below,
+
+customer_id     [Primary Key, also Foreign Key: customer]
+address1	    [Street address]
+address2	    [Additional address details]
+city	        [City]
+state	        [State or province]
+postal_code	    [Postal or ZIP code]
+country	        [Country]
+last_updated    [Timestamp of the last update]
+
+UPDATE customer_address
+SET 
+    address1 = '688 Albion St.',
+    city = 'Ottawa',
+    state = 'ON',
+    postal_code = 'M1M1A1',
+    country = 'Canada',
+    last_updated = CURRENT_TIMESTAMP
+WHERE customer_id = 13;
+
+The Type 1 advantage is it is easy to code. The disadvantage is it doesn't include change history record.
+
+The below is Type 2, that is, retaining changes for customer_address table.
+
+customer_address_id [Primary Key]
+customer_id         [Foreign Key: customer]
+address1            [The address]
+address2            [Additional info on address]
+city	            [City]
+state	            [State or province]
+postal_code	        [Postal or ZIP code]
+country	            [Country]
+start_date          [start date of living in this address actively]
+end_date	        [end date of not living in this address actively]
+is_active	        [this indicator means if the user is living in this address currently]
+
+We can use the below to update the address,
+
+UPDATE customer_address
+SET 
+    end_date = CURRENT_TIMESTAMP,
+    is_active = 0
+WHERE customer_id = 17 AND is_active = 1;
+
+INSERT INTO customer_address (
+    customer_id, address1, city, state, postal_code, country, start_date, is_active
+)
+VALUES (
+    17, '688 James St', 'Ottawa', 'ON', 'M1M 1M1', 'Canada', CURRENT_TIMESTAMP, 1
+);
+
+The advantage is this architecture retains change history. The disadvantage is it is complicated to code.
+
 ```
 
 ***
